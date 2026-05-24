@@ -11,16 +11,35 @@
             display: flex;
             height: 100vh;
             overflow: hidden;
-            background-color: #f8f9fa; /* Bootstrap 淺色背景 */
+            background-color: #f8f9fa;
         }
-        /* 側邊欄樣式 */
+        /* 灰色側邊欄樣式 */
         .sidebar {
             width: 250px;
-            background-color: #ffffff;
-            border-right: 1px solid #dee2e6;
+            background-color: #343a40; /* 深灰色背景 */
+            color: #ffffff; /* 白色文字 */
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+        }
+        /* 灰色按鈕樣式 */
+        .list-group-item-custom {
+            background-color: #495057; /* 預設中灰色 */
+            color: #e9ecef;
+            border: none;
+            margin-bottom: 5px;
+            border-radius: 6px !important;
+            transition: all 0.2s;
+        }
+        .list-group-item-custom:hover {
+            background-color: #6c757d; /* 滑鼠游標移上去的亮灰色 */
+            color: #ffffff;
+        }
+        /* 被選中時的特殊灰色 */
+        .list-group-item-custom.active {
+            background-color: #212529 !important; /* 點選後的極深灰 */
+            color: #ffffff !important;
+            font-weight: bold;
         }
         /* 遊戲畫面區塊 */
         .game-container {
@@ -39,23 +58,23 @@
 
     <div class="sidebar p-3">
         <div>
-            <h3 class="fs-4 text-center mb-4 text-primary"><i class="bi bi-controller"></i> 遊戲啟動器</h3>
-            <hr>
-            <p class="text-muted small fw-bold">選擇遊戲版本：</p>
+            <h3 class="fs-4 text-center mb-4 text-light"><i class="bi bi-controller"></i> 遊戲啟動器</h3>
+            <hr class="text-secondary">
+            <p class="text-secondary small fw-bold">選擇遊戲版本：</p>
             
             <div class="list-group">
-                <button onclick="switchVersion('v1.0')" id="btn-v1.0" class="list-group-item list-group-item-action active">
+                <button onclick="switchVersion('v1.0')" id="btn-v1.0" class="list-group-item list-group-item-custom active">
                     <i class="bi bi-star-fill me-2"></i> 正式版 v1.0
                 </button>
-                <button onclick="switchVersion('beta')" id="btn-beta" class="list-group-item list-group-item-action">
+                <button onclick="switchVersion('beta')" id="btn-beta" class="list-group-item list-group-item-custom">
                     <i class="bi bi-bug-fill me-2"></i> 測試版 Beta
                 </button>
             </div>
         </div>
 
-        <div class="text-center text-muted small">
-            <hr>
-            <p>目前版本: <span id="current-version-text" class="fw-bold text-dark">v1.0</span></p>
+        <div class="text-center text-secondary small">
+            <hr class="text-secondary">
+            <p>目前版本: <span id="current-version-text" class="fw-bold text-light">v1.0</span></p>
         </div>
     </div>
 
@@ -64,23 +83,20 @@
     </div>
 
     <script>
-        // 設定不同版本對應的 TurboWarp HTML 檔名
         const gameVersions = {
             'v1.0': 'game_v1.0.html',
             'beta': 'game_beta.html'
         };
 
         function switchVersion(versionKey) {
-            // 1. 更改 iframe 的來源網址以切換遊戲
             const iframe = document.getElementById('game-frame');
             iframe.src = gameVersions[versionKey];
 
-            // 2. 更新側邊欄下方的文字
             const versionNames = { 'v1.0': '正式版 v1.0', 'beta': '測試版 Beta' };
             document.getElementById('current-version-text').innerText = versionNames[versionKey];
 
-            // 3. 切換按鈕的選取狀態 (Active 藍色高亮)
-            document.querySelectorAll('.list-group-item').forEach(btn => {
+            // 切換按鈕的選取狀態
+            document.querySelectorAll('.list-group-item-custom').forEach(btn => {
                 btn.classList.remove('active');
             });
             document.getElementById(`btn-${versionKey}`).classList.add('active');
