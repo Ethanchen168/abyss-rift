@@ -1,606 +1,448 @@
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-TW" class="h-full">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>裂縫深淵 遊戲啟動器</title>
-  <!-- Bootstrap 5.3 CSS (Slate Dark Theme Setup) -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <!-- Bootstrap Icons -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-  <!-- Google Fonts -->
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-  
-  <style>
-    :root {
-      /* 灰色風格（側邊欄與頂部欄位） */
-      --bg-sidebar: #1e2124;         /* 側邊欄深灰 */
-      --bg-topbar: #2a2d31;          /* 頂部導覽列中灰 */
-      --bg-sidebar-hover: #2f3439;   /* 側邊欄懸停灰 */
-      --border-grey: #3e444b;        /* 灰色框線 */
-      --text-sidebar: #dee2e6;       /* 側邊欄淺色文字 */
-      --text-sidebar-muted: #9ea5ad; /* 側邊欄淡色文字 */
-
-      /* 米色風格（其他區域） */
-      --bg-main: #f5f2eb;            /* 主內容區米色背景 */
-      --bg-card: #ffffff;            /* 卡片亮米白背景 */
-      --bg-inset: #ebe6db;           /* 內嵌說明框深米色 */
-      --border-beige: #dcd6cd;       /* 米色框線 */
-      --text-main: #212529;          /* 主內容區深色文字 */
-      --text-muted: #6c757d;         /* 主內容區淡色文字 */
-      
-      --accent-color: #6c757d;       /* 點綴色 */
-      --accent-hover: #5a6268;
-    }
-
-    body {
-      font-family: 'Noto Sans TC', sans-serif;
-      background-color: var(--bg-main);
-      color: var(--text-main);
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    /* 側邊欄樣式 (灰色調) */
-    .sidebar {
-      width: 280px;
-      background-color: var(--bg-sidebar);
-      border-right: 1px solid var(--border-grey);
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      z-index: 1040; /* 確保在遮罩層之上 */
-      transition: transform 0.3s ease;
-    }
-
-    .sidebar-brand {
-      height: 65px;
-      border-bottom: 1px solid var(--border-grey);
-    }
-
-    /* 自適應 Logo 框架 - 修正偏移關鍵：加上 flex-shrink: 0 */
-    .logo-frame {
-      width: 36px;
-      height: 36px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      border-radius: 8px;
-      background-color: rgba(255, 255, 255, 0.08); /* 深色背景襯托透明圖片 */
-      border: 1px dashed var(--border-grey); /* 虛線框提醒使用者此處為圖片框 */
-      transition: all 0.2s ease;
-      flex-shrink: 0; /* 防止任何佈局寬度擠壓導致 Logo 變形或文字位移 */
-    }
-    
-    .logo-frame img {
-      width: 100%;
-      height: 100%;
-      object-fit: contain; /* 核心：維持比例縮放，絕不變形歪斜 */
-      display: block;
-    }
-
-    /* 品牌標題文字區專用外框 - 解決文字偏上的微調樣式 */
-    .brand-text-wrapper {
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      min-width: 0;
-      line-height: 1.2;
-      margin-top: 2px; /* 頂部微調邊距，將文字往下帶 */
-      transform: translateY(1px); /* 輕微像素級向下移動，修正視覺偏差 */
-    }
-
-    /* 側邊欄版本項目 (灰色調) */
-    .version-item {
-      color: var(--text-sidebar-muted);
-      border-radius: 6px;
-      transition: all 0.2s ease;
-      margin: 4px 12px;
-      padding: 12px 14px;
-      display: flex;
-      align-items: center;
-      text-decoration: none;
-      cursor: pointer;
-      font-size: 0.9rem;
-    }
-
-    .version-item:hover {
-      background-color: var(--bg-sidebar-hover);
-      color: #fff;
-    }
-
-    .version-item.active {
-      background-color: var(--accent-color);
-      color: #fff;
-      font-weight: 500;
-    }
-
-    .version-name-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      overflow: hidden;
-      white-space: nowrap;
-      text-overflow: ellipsis;
-      width: 100%;
-    }
-
-    /* 主要內容區 (米色調) */
-    .main-content {
-      flex: 1;
-      height: 100vh;
-      overflow-y: auto;
-      background-color: var(--bg-main);
-    }
-
-    /* 頂部控制列 (灰色調) */
-    .top-bar {
-      height: 65px;
-      background-color: var(--bg-topbar);
-      border-bottom: 1px solid var(--border-grey);
-    }
-
-    /* 移除手機版漢堡選單按鈕的外框線 */
-    .hamburger-btn {
-      border: none !important;
-      background: transparent !important;
-      box-shadow: none !important;
-      color: #f8f9fa !important;
-      padding: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: opacity 0.2s;
-    }
-    .hamburger-btn:hover {
-      opacity: 0.8;
-    }
-    .hamburger-btn:focus, .hamburger-btn:active {
-      outline: none !important;
-      border: none !important;
-    }
-
-    /* 米色風格卡片 */
-    .card-custom {
-      background-color: var(--bg-card);
-      border: 1px solid var(--border-beige);
-      border-radius: 10px;
-      color: var(--text-main);
-    }
-
-    /* 遊戲播放器容器 */
-    .game-player-wrapper {
-      background-color: #000;
-      border-radius: 8px;
-      border: 1px solid var(--border-beige);
-      position: relative;
-      overflow: hidden;
-      aspect-ratio: 16 / 9;
-      width: 100%;
-    }
-
-    .game-iframe {
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-
-    /* 背景遮罩層 (預設隱藏) */
-    .sidebar-backdrop {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      background-color: rgba(0, 0, 0, 0.5);
-      z-index: 1030;
-      display: none;
-      opacity: 0;
-      transition: opacity 0.3s ease;
-    }
-
-    /* 側邊欄手機板收合與動畫優化 */
-    @media (max-width: 991.98px) {
-      .sidebar {
-        position: fixed;
-        left: 0;
-        top: 0;
-        transform: translateX(-100%);
-      }
-      .sidebar.show {
-        transform: translateX(0);
-      }
-      .sidebar-backdrop.show {
-        display: block;
-        opacity: 1;
-      }
-    }
-  </style>
-
-  <!-- 提前宣告 Logo 錯誤處理函數，避免 HTML 提早渲染導致 ReferenceError -->
+  <title>裂縫深淵 啟動器</title>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome 圖標 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <script>
-    function handleLogoError(imgElement) {
-      imgElement.style.display = 'none'; // 隱藏原本載入失敗的 img 標籤
-      const placeholder = document.getElementById('logoPlaceholder');
-      if (placeholder) {
-        placeholder.style.display = 'block'; // 顯示預設的 Bootstrap 圖示
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            // 上方深灰色風格 (Bootstrap Slate Gray)
+            header: {
+              900: '#1e2022',
+              800: '#2d3135',
+              700: '#3f4448',
+              text: '#f1f2f3'
+            },
+            // 黃色品牌色 (Vibrant Gold/Yellow)
+            brandYellow: {
+              400: '#fcd34d',
+              500: '#f59e0b', // 溫暖亮黃
+              600: '#d97706'
+            },
+            // 淺灰色風格 (Minimal Light Gray)
+            lightGray: {
+              50: '#f9fafb',   // 極淺底色
+              100: '#f3f4f6',  // 主背景灰色
+              200: '#e5e7eb',  // 卡片邊框、副背景
+              300: '#d1d5db',  // 分隔線
+              800: '#374151',  // 內文文字色
+              900: '#111827'   // 深灰標題色
+            }
+          }
+        }
       }
     }
   </script>
+  <style>
+    /* 隱藏滾動條但保留功能 */
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+  </style>
 </head>
-<body>
+<body class="bg-lightGray-100 text-lightGray-800 font-sans h-full flex flex-col select-none overflow-hidden">
 
-  <!-- 手機版側邊欄背景遮罩 -->
-  <div class="sidebar-backdrop" id="sidebarBackdrop" onclick="closeSidebar()"></div>
-
-  <div class="d-flex h-100">
-    <!-- 側邊欄 (灰色風格) -->
-    <nav class="sidebar" id="sidebar">
-      <div class="sidebar-brand d-flex align-items-center justify-content-between px-4">
-        <!-- 裂縫深淵 品牌 Logo 區域 -->
-        <div class="d-flex align-items-center" style="min-width: 0;">
-          <!-- 自適應 Logo 圖片框架 (可自行替換成 logo.png) -->
-          <div class="logo-frame me-2" title="裂縫深淵 Logo 框架">
-            <img src="標題.png" alt="Logo" id="launcherLogo" onerror="handleLogoError(this)">
-            <!-- 破圖時的優雅灰色預設 icon -->
-            <i class="bi bi-patch-question text-secondary" id="logoPlaceholder" style="display: none; font-size: 1.25rem;"></i>
-          </div>
-          <!-- 品牌標題文字區 - 使用自訂的 brand-text-wrapper 進行垂直置中對齊微調 -->
-          <div class="brand-text-wrapper">
-            <h6 class="m-0 fw-bold tracking-wide text-light" style="line-height: 1.2;">裂縫深淵</h6>
-            <small class="text-muted" style="font-size: 0.7rem; line-height: 1.2; margin-top: 2px;">Abyss Rift 啟動器</small>
-          </div>
+  <!-- ================= 上方深灰色導覽列 (Top Header) ================= -->
+  <header class="bg-header-900 text-header-text border-b border-header-800 px-4 sm:px-6 py-4 flex items-center justify-between shadow-md z-20 flex-shrink-0">
+    <div class="flex items-center space-x-3">
+      <!-- 漢堡選單按鈕 (僅在 lg 以下螢幕顯示) -->
+      <button onclick="toggleSidebar(true)" class="lg:hidden text-white hover:text-brandYellow-400 p-1.5 rounded-lg focus:outline-none transition cursor-pointer" title="開啟選單">
+        <i class="fa-solid fa-bars text-lg"></i>
+      </button>
+      
+      <div class="flex items-center space-x-2.5">
+        <div class="w-8 h-8 rounded bg-gradient-to-br from-header-700 to-header-800 flex items-center justify-center text-brandYellow-400 text-sm shadow">
+          <i class="fa-solid fa-gamepad"></i>
         </div>
-        <!-- 手機版專用關閉按鈕 -->
-        <button class="btn btn-sm btn-outline-secondary d-lg-none border-0 text-light" onclick="closeSidebar()" title="關閉選單">
-          <i class="bi bi-x-lg"></i>
-        </button>
-      </div>
-
-      <!-- 版本清單選單 -->
-      <div class="py-3 flex-grow-1 overflow-y-auto">
-        <div class="px-4 mb-2">
-          <small class="text-uppercase text-muted fw-bold" style="font-size: 0.75rem; letter-spacing: 1px;">版本切換</small>
-        </div>
-        
-        <div id="sidebarVersionList">
-          <!-- 這裡會動態載入所有版本 -->
+        <div>
+          <h1 class="font-bold tracking-wider text-sm sm:text-base text-white">裂縫深淵</h1>
         </div>
       </div>
-    </nav>
+    </div>
+  </header>
 
-    <!-- 右側主要內容區 (米色風格) -->
-    <div class="main-content d-flex flex-column">
-      <!-- 頂部導覽列 (灰色風格) -->
-      <header class="top-bar d-flex align-items-center justify-content-between px-4">
-        <div class="d-flex align-items-center">
-          <!-- 開啟側邊欄按鈕 (已移除白色邊框) -->
-          <button class="btn hamburger-btn d-lg-none me-3" onclick="openSidebar()" title="開啟選單">
-            <i class="bi bi-list fs-3"></i>
+  <!-- 全域版面配置：左側黑色側邊欄 + 右側主內容區 -->
+  <div class="flex-1 flex relative overflow-hidden">
+
+    <!-- ================= 手機版側邊欄背景遮罩 (Overlay Backdrop) ================= -->
+    <div id="sidebar-backdrop" onclick="toggleSidebar(false)" class="fixed inset-0 bg-black/50 z-30 hidden transition-opacity duration-300 opacity-0 lg:hidden"></div>
+
+    <!-- ================= 左側大黑色側邊欄 (Large Black Sidebar) ================= -->
+    <aside id="large-sidebar" class="fixed inset-y-0 left-0 w-72 sm:w-80 bg-neutral-950 border-r border-neutral-800 z-40 transform -translate-x-full lg:translate-x-0 lg:static lg:w-72 xl:w-80 flex-shrink-0 flex flex-col justify-between transition-transform duration-300 ease-in-out shadow-2xl lg:shadow-none text-neutral-300">
+      
+      <!-- 側邊欄頂部：版本標題與關閉按鈕 -->
+      <div class="p-5 border-b border-neutral-800 flex flex-col space-y-4 flex-shrink-0">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <i class="fa-solid fa-code-branch text-brandYellow-500 text-sm"></i>
+            <h3 class="text-sm font-bold text-white uppercase tracking-wider">選擇遊戲版本</h3>
+          </div>
+          <!-- 手機版專用關閉按鈕 -->
+          <button onclick="toggleSidebar(false)" class="lg:hidden text-neutral-400 hover:text-white p-1 rounded-lg transition cursor-pointer" title="關閉選單">
+            <i class="fa-solid fa-xmark text-md"></i>
           </button>
-          <h5 class="m-0 fw-bold text-light" id="topBarTitle">遊戲載入中...</h5>
         </div>
-      </header>
+        <p class="text-[11px] text-neutral-400 leading-relaxed">請在下方選單中點選遊戲版本，啟動器將會自動讀取 GitHub 儲存庫對應的檔案路徑。</p>
+      </div>
 
-      <!-- 主要內頁 (米色背景) -->
-      <main class="p-4 flex-grow-1">
+      <!-- 側邊欄中部：版本列表滾動區域 -->
+      <div id="version-sidebar-container" class="flex-1 overflow-y-auto p-4 space-y-2.5 no-scrollbar bg-neutral-900/40">
+        <!-- 由 JS 動態渲染版本按鈕 -->
+      </div>
+
+      <!-- 側邊欄底部：版權與說明 -->
+      <div class="p-4 bg-neutral-950 border-t border-neutral-800 text-center text-[10px] text-neutral-500 flex-shrink-0">
+        <p>© 2026 裂縫深淵</p>
+        <p class="mt-0.5">基於 GitHub Pages 相對路徑建構</p>
+      </div>
+    </aside>
+
+    <!-- ================= 右側主內容區 (Main Light Gray Container) ================= -->
+    <main class="flex-1 p-4 sm:p-6 md:p-8 overflow-y-auto bg-lightGray-100 flex flex-col items-center">
+      
+      <!-- my-auto 確保小螢幕可順暢滑動不切頭 -->
+      <div class="w-full max-w-4xl grid grid-cols-1 md:grid-cols-12 gap-5 md:gap-6 items-stretch my-auto py-2 sm:py-4">
         
-        <!-- 遊戲與介紹介面 (核心遊玩頁) -->
-        <div id="screen-play" class="view-screen">
-          <div class="row g-4">
-            <!-- 左側：遊戲播放器 -->
-            <div class="col-xl-8 col-lg-7">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <h5 class="m-0 fw-bold text-dark" id="playGameTitle">載入中...</h5>
-                <div class="d-flex gap-2">
-                  <!-- 改為實心黃色按鈕 -->
-                  <button class="btn btn-sm text-dark px-3" style="background-color:  #fbbf24; border-color:  #fbbf24; font-weight: 500;" onclick="reloadGame()" id="btnReload" title="重新載入">
-                    <i class="bi bi-arrow-clockwise me-1"></i> 重整
-                  </button>
-                </div>
+        <!-- 中間：版本詳細介紹卡片 (佔 7/12) -->
+        <div class="md:col-span-7 bg-white border border-lightGray-200 rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col justify-between space-y-5">
+          <div>
+            <!-- 標題 -->
+            <div class="pb-3.5 border-b border-lightGray-200">
+              <h2 class="text-base sm:text-lg font-bold text-lightGray-900 flex items-center space-x-2">
+                <i class="fa-solid fa-circle-info text-lightGray-800"></i>
+                <span>遊戲版本介紹</span>
+              </h2>
+            </div>
+
+            <!-- 遊戲版本詳情展示 -->
+            <div class="mt-4 space-y-3.5">
+              <div class="flex items-center space-x-2 flex-wrap gap-y-1">
+                <span id="display-version-title" class="text-sm sm:text-md font-bold text-lightGray-900">載入中...</span>
+                <span id="display-version-branch" class="text-[9px] sm:text-[10px] px-2 py-0.5 rounded-full font-bold bg-lightGray-200 text-lightGray-855">分支</span>
               </div>
               
-              <!-- 遊戲畫面視窗 -->
-              <div class="game-player-wrapper" id="playerContainer">
-                <!-- Iframe 將動態插入此處 -->
-              </div>
-            </div>
-
-            <!-- 右側：版本介紹、更新日誌與操作說明 (米色卡片風格) -->
-            <div class="col-xl-4 col-lg-5">
-              <div class="card card-custom h-100">
-                <div class="card-body p-4">
-                  <h5 class="fw-bold border-bottom border-secondary pb-2 mb-3 text-dark">
-                    <i class="bi bi-file-earmark-text me-2"></i>版本資訊與說明
-                  </h5>
-                  
-                  <div class="mb-4">
-                    <h6 class="text-muted small fw-bold text-uppercase">載入類型</h6>
-                    <span class="badge bg-secondary" id="infoType">N/A</span>
-                  </div>
-
-                  <div class="mb-4">
-                    <h6 class="text-muted small fw-bold text-uppercase">建立時間</h6>
-                    <p class="text-dark m-0" id="infoDate">N/A</p>
-                  </div>
-
-                  <div class="mb-3">
-                    <h6 class="text-muted small fw-bold text-uppercase">操作說明 & 更新日誌</h6>
-                    <div class="p-3 rounded border border-beige text-dark" id="notesBox" style="background-color: var(--bg-inset); max-height: 280px; overflow-y: auto;">
-                      <p class="m-0 small" id="infoNotes" style="white-space: pre-wrap; line-height: 1.6;">無詳細描述。</p>
-                    </div>
-                  </div>
-                </div>
+              <div class="bg-lightGray-100/70 rounded-xl p-3.5 sm:p-4 border border-lightGray-200">
+                <h4 class="text-[11px] sm:text-xs font-bold text-lightGray-900 uppercase tracking-wide mb-2">更新說明與更動項目：</h4>
+                <ul id="display-version-changelog" class="list-disc pl-5 text-xs text-lightGray-800/80 space-y-1.5 leading-relaxed">
+                  <!-- 動態注入更動日誌 -->
+                </ul>
               </div>
             </div>
           </div>
+
+          <!-- 輔育說明 -->
+          <div class="text-[10px] sm:text-[11px] text-lightGray-800/60 pt-3.5 border-t border-lightGray-200 flex items-center space-x-1.5 flex-wrap gap-y-1">
+            <i class="fa-solid fa-folder-open text-brandYellow-500"></i>
+            <span id="display-version-path" class="font-mono bg-lightGray-100 px-1.5 py-0.5 rounded text-[10px]">路徑：--</span>
+            <span id="display-version-date" class="ml-auto text-[10px]">更新日期：----/--/--</span>
+          </div>
         </div>
 
-      </main>
-    </div>
+        <!-- 右側：開始遊戲按鈕大卡片 (佔 5/12) -->
+        <div class="md:col-span-5 bg-white border border-lightGray-200 rounded-2xl p-6 sm:p-8 shadow-sm flex flex-col justify-center items-center text-center relative overflow-hidden min-h-[220px] md:min-h-auto">
+          <!-- 裝飾背景浮水印 -->
+          <div class="absolute -right-8 -bottom-8 opacity-[0.03] text-[120px] sm:text-[150px] pointer-events-none text-lightGray-900"><i class="fa-solid fa-gamepad"></i></div>
+
+          <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-2xl bg-lightGray-100 flex items-center justify-center text-brandYellow-500 mb-3 sm:mb-4 shadow-inner border border-lightGray-200">
+            <i class="fa-solid fa-rocket text-xl sm:text-2xl"></i>
+          </div>
+
+          <div class="space-y-1 mb-6 sm:mb-8 z-10">
+            <h3 class="text-[10px] sm:text-xs font-bold text-lightGray-800/70 uppercase tracking-widest">當前選擇版本</h3>
+            <p id="launch-card-ver-name" class="text-sm sm:text-md font-bold text-lightGray-900 truncate max-w-[200px] sm:max-w-[240px]">載入中...</p>
+            <span id="launch-card-ver-tag" class="inline-block text-[9px] sm:text-[10px] font-mono bg-lightGray-200 px-2 py-0.5 rounded text-lightGray-855 font-semibold">v0.0.0</span>
+          </div>
+
+          <!-- 醒目的亮黃色大按鈕 -->
+          <button onclick="launchGame()" class="w-full py-3.5 px-6 bg-brandYellow-500 hover:bg-brandYellow-600 text-header-900 font-extrabold rounded-xl shadow-md hover:shadow-lg transition-all transform active:scale-95 flex items-center justify-center space-x-2.5 text-base sm:text-lg z-10 cursor-pointer">
+            <i class="fa-solid fa-circle-play text-lg sm:text-xl"></i>
+            <span>開始遊戲</span>
+          </button>
+
+          <p class="text-[9px] sm:text-[10px] text-lightGray-800/65 mt-3.5 z-10">點擊後將直接啟動遊戲檔案</p>
+        </div>
+
+      </div>
+    </main>
   </div>
 
-  <!-- 提示通知 (Toast) -->
-  <div class="toast-container position-fixed bottom-0 end-0 p-3" style="z-index: 1050;">
-    <div id="customToast" class="toast align-items-center text-white bg-dark border-secondary" role="alert" aria-live="assertive" aria-atomic="true">
-      <div class="d-flex">
-        <div class="toast-body" id="toastMessage">提示訊息</div>
-        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+  <!-- ================= 遊戲運行全螢幕覆蓋面板 (Game Player Embed) ================= -->
+  <div id="game-player-screen" class="fixed inset-0 bg-black z-50 flex flex-col hidden transition-all duration-300">
+    <!-- 頂部深色功能條 -->
+    <div class="h-14 bg-header-900 border-b border-header-800 flex items-center justify-between px-3 sm:px-4 z-10 text-header-text flex-shrink-0">
+      <div class="flex items-center space-x-2 sm:space-x-3 min-w-0">
+        <span id="player-game-title" class="font-bold text-white text-xs sm:text-sm tracking-wide truncate max-w-[120px] sm:max-w-[240px]">載入中...</span>
+        <span id="player-game-version-badge" class="text-[10px] bg-header-800 px-1.5 py-0.5 rounded text-gray-300 font-mono flex-shrink-0">v0.0</span>
+      </div>
+      
+      <!-- 僅保留「結束」按鈕，移除重新載入與全螢幕按鈕 -->
+      <div class="flex items-center space-x-1.5 sm:space-x-2">
+        <button onclick="closeGamePlayer()" class="bg-red-950 hover:bg-red-900 text-red-200 hover:text-white px-3 sm:px-4 py-2 rounded-lg text-xs font-semibold transition flex items-center space-x-1.5">
+          <i class="fa-solid fa-power-off"></i>
+          <span class="hidden xs:inline">結束</span>
+        </button>
       </div>
     </div>
+
+    <!-- TurboWarp iframe 容器 -->
+    <div class="flex-1 bg-black relative flex items-center justify-center min-h-0">
+      <!-- 載入等待動畫 -->
+      <div id="player-loading-overlay" class="absolute inset-0 bg-header-900 flex flex-col items-center justify-center space-y-4 z-20">
+        <div class="w-10 h-10 border-4 border-brandYellow-500 border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-xs text-gray-400">正在加載遊戲與引擎資源...</p>
+      </div>
+      <!-- 實際 Iframe 節點 -->
+      <iframe id="turbowarp-iframe" class="w-full h-full border-0" allowtransparency="true" allowfullscreen="true" allow="autoplay; gamepad; camera; microphone"></iframe>
+    </div>
   </div>
 
-  <!-- Bootstrap Bundle with Popper -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- ================= 系統微調通知訊息 (Custom Alert Box) ================= -->
+  <div id="custom-toast" class="fixed bottom-6 right-6 left-6 sm:left-auto bg-white border border-lightGray-200 rounded-xl shadow-2xl p-4 flex items-center space-x-3 translate-y-24 opacity-0 transition-all duration-300 z-50 text-lightGray-800 max-w-sm">
+    <div id="toast-icon-wrapper" class="w-8 h-8 rounded-full flex items-center justify-center text-sm flex-shrink-0">
+      <i class="fa-solid fa-circle-check"></i>
+    </div>
+    <div>
+      <h4 id="toast-title" class="font-bold text-xs text-lightGray-900">通知</h4>
+      <p id="toast-desc" class="text-[11px] text-lightGray-800/80">動作已成功完成。</p>
+    </div>
+  </div>
 
+  <!-- ================= 系統邏輯核心 JavaScript ================= -->
   <script>
-    // --- 應用程式狀態與資料庫設定 ---
-    const appId = typeof __app_id !== 'undefined' ? __app_id : 'tw-lite-launcher';
-    let dbInstance = null;
-    const DB_NAME = 'TWLiteLauncherFileStore';
-    const STORE_NAME = 'gameFiles';
-
-    // 初始化 IndexedDB，讓本機 HTML 檔案可以儲存在瀏覽器中
-    function initIndexedDB() {
-      return new Promise((resolve, reject) => {
-        const request = indexedDB.open(DB_NAME, 1);
-        request.onupgradeneeded = (e) => {
-          const db = e.target.result;
-          if (!db.objectStoreNames.contains(STORE_NAME)) {
-            db.createObjectStore(STORE_NAME);
-          }
-        };
-        request.onsuccess = (e) => {
-          dbInstance = e.target.result;
-          resolve(dbInstance);
-        };
-        request.onerror = (e) => reject(e.target.error);
-      });
-    }
-
-    function getFileFromDB(id) {
-      return new Promise((resolve, reject) => {
-        if (!dbInstance) return reject('DB 未載入');
-        const transaction = dbInstance.transaction([STORE_NAME], 'readonly');
-        const store = transaction.objectStore(STORE_NAME);
-        const request = store.get(id);
-        request.onsuccess = (e) => resolve(e.target.result);
-        request.onerror = () => reject(request.error);
-      });
-    }
-
-    // 預設安全的範例遊戲
-    const defaultVersions = [
+    /**
+     * 支援三種來源載入方式 (非常適合儲存於 GitHub 儲存庫內)：
+     * 1. sourceType: "local"  -> 直接讀取相對路徑下打包好的 index.html 網頁 (最推薦、完全自代管)
+     * 2. sourceType: "sb3"    -> 讀取儲存庫中的相對 .sb3 專案，動態計算網址後經 TurboWarp 載入
+     * 3. sourceType: "online" -> 仍使用 Scratch 官方或 TurboWarp 線上共用的 ID
+     */
+    const GAME_VERSIONS = [
       {
-        id: "v-demo-1",
-        name: "Alpha 1",
-        type: "id",
-        projId: "html/alpha1.html",
-        url: "",
-        notes: "此版本只有移動功能，使用上下左右或右下角Pad移動",
-        createdAt: "2026/05/24"
+        id: "v1",
+        tag: "v0.0.1",
+        name: "裂縫深淵：第一個可用版本",
+        sourceType: "local",
+        path: "html/alpha1.html", // 您在 GitHub 儲存庫中的相對路徑
+        projectId: "",
+        date: "2026-05-24",
+        branch: "內部測試版(Alpha版)",
+        changelog: [
+          "只包含移動的超簡易版本"
+        ]
       }
     ];
 
-    let appState = {
-      versions: [],
-      currentSelectedId: ""
+    // 全局選中狀態
+    let selectedVersionId = "v1";
+
+    // 初始化
+    window.onload = function() {
+      renderVersionSidebar();
+      updateDisplayUI();
     };
 
-    // --- 頁面啟動載入 ---
-    window.onload = async function() {
-      try {
-        await initIndexedDB();
-      } catch (err) {
-        console.error("無法使用本機儲存空間，部分檔案上傳功能將受限:", err);
-      }
-      loadData();
-      renderUI();
-      
-      // 啟動時預設直接載入最新的一個遊戲版本 (陣列最後一個)
-      if (appState.versions && appState.versions.length > 0) {
-        const latestVersion = appState.versions[appState.versions.length - 1];
-        loadGameVersion(latestVersion.id);
-      } else {
-        showEmptyPlaceholder();
-      }
-    };
+    // 渲染側邊欄清單
+    function renderVersionSidebar() {
+      const container = document.getElementById("version-sidebar-container");
+      container.innerHTML = "";
 
-    // 載入資料
-    function loadData() {
-      const saved = localStorage.getItem(`${appId}-versions`);
-      if (saved) {
-        appState.versions = JSON.parse(saved);
-      } else {
-        appState.versions = [...defaultVersions];
-        saveData();
-      }
-    }
-
-    function saveData() {
-      localStorage.setItem(`${appId}-versions`, JSON.stringify(appState.versions));
-    }
-
-    // --- 介面渲染 ---
-    function renderUI() {
-      const sidebarList = document.getElementById('sidebarVersionList');
-      sidebarList.innerHTML = '';
-      
-      appState.versions.forEach(v => {
-        const isActive = v.id === appState.currentSelectedId;
+      GAME_VERSIONS.forEach(ver => {
+        const isActive = ver.id === selectedVersionId;
         
-        const item = document.createElement('div');
-        item.className = `version-item ${isActive ? 'active' : ''}`;
-        item.style.cursor = 'pointer';
+        // 建立按鈕元素
+        const btn = document.createElement("button");
+        btn.onclick = () => selectVersion(ver.id);
         
-        // 單一可點擊選取區域
-        const nameWrapper = document.createElement('div');
-        nameWrapper.className = 'version-name-wrapper';
-        nameWrapper.innerHTML = `<i class="bi bi-caret-right-fill"></i> <span title="${v.name}">${v.name}</span>`;
-        nameWrapper.onclick = () => {
-          loadGameVersion(v.id);
-          closeSidebar(); // 點擊切換後自動關閉小螢幕側邊欄
-        };
+        // 側邊欄按鈕外觀 - 適配深黑背景 (選取時帶黃色指示，未選取時為高質感知性深色 hover)
+        if (isActive) {
+          btn.className = "w-full flex flex-col text-left p-3.5 rounded-xl border border-neutral-800 bg-neutral-900 shadow-sm text-white font-bold border-l-4 border-l-brandYellow-500 transition-all cursor-pointer flex-shrink-0";
+        } else {
+          btn.className = "w-full flex flex-col text-left p-3.5 rounded-xl border border-transparent bg-transparent hover:bg-neutral-900 text-neutral-400 hover:text-white transition-all cursor-pointer flex-shrink-0";
+        }
 
-        item.appendChild(nameWrapper);
-        sidebarList.appendChild(item);
+        // 按鈕內部 HTML (適配深色底)
+        btn.innerHTML = `
+          <div class="flex items-center justify-between w-full mb-1 pointer-events-none">
+            <span class="text-[10px] font-mono px-2 py-0.5 rounded ${isActive ? 'bg-brandYellow-500 text-header-900 font-extrabold' : 'bg-neutral-800 text-neutral-300'}">${ver.tag}</span>
+            <span class="text-[9px] ${isActive ? 'text-brandYellow-400/80' : 'text-neutral-500'}">${ver.date}</span>
+          </div>
+          <span class="text-xs truncate w-full pointer-events-none ${isActive ? 'text-white font-extrabold' : 'text-neutral-300'}">${ver.name}</span>
+        `;
+        
+        container.appendChild(btn);
       });
     }
 
-    function getTypeLabel(type) {
-      if (type === 'id') return '專案 ID';
-      if (type === 'url') return '線上網址';
-      if (type === 'file') return '本機 HTML';
-      return '未知';
+    // 側邊欄開合控制器 (手機版漢堡選單)
+    function toggleSidebar(open) {
+      const sidebar = document.getElementById("large-sidebar");
+      const backdrop = document.getElementById("sidebar-backdrop");
+
+      if (open) {
+        backdrop.classList.remove("hidden");
+        setTimeout(() => {
+          backdrop.classList.add("opacity-100");
+          sidebar.classList.remove("-translate-x-full");
+        }, 10);
+      } else {
+        sidebar.classList.add("-translate-x-full");
+        backdrop.classList.remove("opacity-100");
+        setTimeout(() => {
+          backdrop.classList.add("hidden");
+        }, 300);
+      }
     }
 
-    // 當沒有任何版本時，顯示乾淨的空白提示狀態
-    function showEmptyPlaceholder() {
-      appState.currentSelectedId = "";
-      renderUI();
-
-      document.getElementById('topBarTitle').innerText = '未選擇版本';
-      document.getElementById('playGameTitle').innerText = '請新增遊戲版本';
-      document.getElementById('infoType').innerText = 'N/A';
-      document.getElementById('infoDate').innerText = 'N/A';
-      document.getElementById('infoNotes').innerText = '請在 HTML 的 defaultVersions 陣列中填寫您的遊戲版本資訊，即可自動載入！';
+    // 版本選擇
+    function selectVersion(id) {
+      selectedVersionId = id;
+      renderVersionSidebar();
+      updateDisplayUI();
       
-      document.getElementById('btnReload').disabled = true;
-      document.getElementById('btnFullscreen').disabled = true;
+      const ver = GAME_VERSIONS.find(v => v.id === selectedVersionId);
+      showToast("切換版本成功", `已成功切換至 ${ver.tag}`);
 
-      const container = document.getElementById('playerContainer');
-      container.innerHTML = `
-        <div class="h-100 d-flex flex-column align-items-center justify-content-center text-muted" style="min-height: 350px;">
-          <i class="bi bi-cloud-arrow-up fs-1 mb-3"></i>
-          <p class="m-0 fw-bold text-dark">目前無遊戲版本</p>
-          <small class="text-muted mt-1">請在程式碼中配置您的預設遊戲列表</small>
-        </div>
-      `;
+      // 手機版自動關閉側欄抽屜
+      if (window.innerWidth < 1024) {
+        toggleSidebar(false);
+      }
     }
 
-    // 切換至遊戲頁並啟動載入
-    async function loadGameVersion(id) {
-      const ver = appState.versions.find(v => v.id === id);
+    // 更新右側介紹與啟動區 UI
+    function updateDisplayUI() {
+      const ver = GAME_VERSIONS.find(v => v.id === selectedVersionId);
       if (!ver) return;
 
-      appState.currentSelectedId = id;
-      renderUI();
+      // 1. 更新介紹卡片
+      document.getElementById("display-version-title").innerText = ver.name;
+      document.getElementById("display-version-branch").innerText = ver.branch;
+      document.getElementById("display-version-date").innerText = `更新日期：${ver.date}`;
 
-      document.getElementById('btnReload').disabled = false;
-      document.getElementById('btnFullscreen').disabled = false;
-
-      // 更新介面文字
-      document.getElementById('topBarTitle').innerText = '裂縫深淵啟動器';
-      document.getElementById('playGameTitle').innerText = ver.name;
-      document.getElementById('infoType').innerText = getTypeLabel(ver.type);
-      document.getElementById('infoDate').innerText = ver.createdAt || '未知';
-      document.getElementById('infoNotes').innerText = ver.notes || '此版本無特別編寫說明。';
-
-      // 載入中動畫
-      const container = document.getElementById('playerContainer');
-      container.innerHTML = `
-        <div class="h-100 d-flex flex-column align-items-center justify-content-center text-muted" style="min-height: 350px;">
-          <div class="spinner-border text-secondary mb-3" role="status"></div>
-          <p class="m-0 text-dark">正在載入 TurboWarp 遊戲中...</p>
-        </div>
-      `;
-
-      // 載入遊戲 Iframe
-      setTimeout(async () => {
-        try {
-          let embedUrl = "";
-          
-          // 定義共同的安全權限政策，明確授予全螢幕、自動播放、鍵盤映射、手把等功能
-          const iframePermissions = 'allow="fullscreen; autoplay; gamepad; keyboard-map; camera; microphone"';
-
-          if (ver.type === 'id') {
-            embedUrl = `https://ethanchen168.github.io/abyss-rift/${ver.projId}`;
-            container.innerHTML = `<iframe src="${embedUrl}" class="game-iframe" allowtransparency="true" allowfullscreen="true" ${iframePermissions}></iframe>`;
-          } 
-          else if (ver.type === 'url') {
-            embedUrl = ver.url;
-            container.innerHTML = `<iframe src="${embedUrl}" class="game-iframe" allowtransparency="true" allowfullscreen="true" ${iframePermissions}></iframe>`;
-          } 
-          else if (ver.type === 'file') {
-            const fileBlob = await getFileFromDB(ver.id);
-            if (!fileBlob) {
-              throw new Error("找不到本機快取的 HTML 檔案，可能已被瀏覽器清除。請重新建立該版本。");
-            }
-            const blobUrl = URL.createObjectURL(fileBlob);
-            container.innerHTML = `<iframe src="${blobUrl}" class="game-iframe" allowtransparency="true" allowfullscreen="true" ${iframePermissions}></iframe>`;
-          }
-        } catch (err) {
-          container.innerHTML = `
-            <div class="h-100 d-flex flex-column align-items-center justify-content-center text-danger p-4" style="min-height: 350px;">
-              <i class="bi bi-exclamation-triangle fs-2 mb-2"></i>
-              <p class="fw-bold">啟動失敗</p>
-              <p class="small text-muted text-center">${err.message}</p>
-            </div>
-          `;
-        }
-      }, 400);
-    }
-
-    // 重新整理遊戲
-    function reloadGame() {
-      const iframe = document.querySelector('.game-iframe');
-      if (iframe) {
-        iframe.src = iframe.src;
-        showToast('遊戲已重新啟動！');
-      }
-    }
-
-    // 全螢幕切換
-    function toggleFullscreen() {
-      const wrapper = document.getElementById('playerContainer');
-      if (!document.fullscreenElement) {
-        wrapper.requestFullscreen().catch(err => {
-          showToast(`無法啟用全螢幕: ${err.message}`);
-        });
+      // 顯示當前版本路徑或專案 ID 狀態
+      const pathLabel = document.getElementById("display-version-path");
+      if (ver.sourceType === "local") {
+        pathLabel.innerText = `[相對路徑] ./${ver.path}`;
+      } else if (ver.sourceType === "sb3") {
+        pathLabel.innerText = `[遊戲檔案] ./${ver.path}`;
       } else {
-        document.exitFullscreen();
+        pathLabel.innerText = `[線上 ID] ${ver.projectId}`;
+      }
+
+      // 渲染更動日誌
+      const changelogContainer = document.getElementById("display-version-changelog");
+      changelogContainer.innerHTML = "";
+      ver.changelog.forEach(line => {
+        const li = document.createElement("li");
+        li.innerText = line;
+        changelogContainer.appendChild(li);
+      });
+
+      // 2. 更新啟動卡片
+      document.getElementById("launch-card-ver-name").innerText = ver.name;
+      document.getElementById("launch-card-ver-tag").innerText = ver.tag;
+    }
+
+    // 安全相對路徑解析器 (特別相容沙盒 blob: 網址)
+    function getAbsoluteUrl(relativePath) {
+      try {
+        let base = window.location.href;
+        // 如果當前在以 blob: 形式運作的沙盒預覽器中
+        if (base.startsWith('blob:')) {
+          // 嘗試提取其中真實的網址源
+          const match = base.match(/blob:(https?:\/\/[^\/]+)/);
+          if (match && match[1]) {
+            base = match[1] + '/';
+          } else {
+            base = window.location.origin + '/';
+          }
+        }
+        return new URL(relativePath, base).href;
+      } catch (e) {
+        // 極端情況下的安全防線
+        console.warn("相對路徑解析受到限制，使用安全降級策略:", e);
+        return window.location.origin + '/' + relativePath;
       }
     }
 
-    // --- 小螢幕側邊欄開關控制 ---
-    function openSidebar() {
-      document.getElementById('sidebar').classList.add('show');
-      document.getElementById('sidebarBackdrop').classList.add('show');
+    // 啟動遊戲 (核心路徑構建邏輯)
+    function launchGame() {
+      const ver = GAME_VERSIONS.find(v => v.id === selectedVersionId);
+      if (!ver) {
+        showToast("啟動失敗", "找不到選擇的版本資料", true);
+        return;
+      }
+
+      let iframeUrl = "";
+
+      // 根據不同的來源類型構建網址
+      if (ver.sourceType === "local") {
+        // 直接使用相對路徑，載入您託管在 GitHub 同目錄下的 html 檔案
+        iframeUrl = ver.path;
+      } else if (ver.sourceType === "sb3") {
+        // 動態將相對的 .sb3 轉換為完整的網址，傳給 TurboWarp 線上播放器載入
+        const absoluteSb3Url = getAbsoluteUrl(ver.path);
+        iframeUrl = `https://turbowarp.org/embed.html?load=${encodeURIComponent(absoluteSb3Url)}&interpolate=1&clones=Infinity&stuck=1&fps=60`;
+      } else if (ver.sourceType === "online") {
+        // 使用一般的線上 TurboWarp 嵌入連結
+        iframeUrl = `https://turbowarp.org/projects/${ver.projectId}/embed?interpolate=1&clones=Infinity&stuck=1&fps=60`;
+      }
+
+      document.getElementById("player-game-title").innerText = ver.name;
+      document.getElementById("player-game-version-badge").innerText = ver.tag;
+
+      document.getElementById("player-loading-overlay").classList.remove("hidden");
+      const iframe = document.getElementById("turbowarp-iframe");
+      iframe.src = iframeUrl;
+
+      iframe.onload = function() {
+        document.getElementById("player-loading-overlay").classList.add("hidden");
+      };
+
+      document.getElementById("game-player-screen").classList.remove("hidden");
     }
 
-    function closeSidebar() {
-      document.getElementById('sidebar').classList.remove('show');
-      document.getElementById('sidebarBackdrop').classList.remove('show');
+    function closeGamePlayer() {
+      document.getElementById("game-player-screen").classList.add("hidden");
+      document.getElementById("turbowarp-iframe").src = "about:blank";
+      showToast("已關閉遊戲", "期待您的下次遊玩！");
     }
 
-    function showToast(message) {
-      document.getElementById('toastMessage').innerText = message;
-      const toastEl = document.getElementById('customToast');
-      const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
-      toast.show();
+    // 客製化通知
+    let toastTimeout = null;
+    function showToast(title, desc, isError = false) {
+      const toast = document.getElementById("custom-toast");
+      const iconWrap = document.getElementById("toast-icon-wrapper");
+      
+      document.getElementById("toast-title").innerText = title;
+      document.getElementById("toast-desc").innerText = desc;
+
+      if (isError) {
+        iconWrap.className = "w-8 h-8 rounded-full flex items-center justify-center text-sm bg-red-100 text-red-600 border border-red-200 flex-shrink-0";
+        iconWrap.innerHTML = '<i class="fa-solid fa-circle-exclamation"></i>';
+      } else {
+        iconWrap.className = "w-8 h-8 rounded-full flex items-center justify-center text-sm bg-brandYellow-500 text-header-900 border border-brandYellow-400 flex-shrink-0";
+        iconWrap.innerHTML = '<i class="fa-solid fa-circle-check"></i>';
+      }
+
+      toast.classList.remove("translate-y-24", "opacity-0");
+      toast.classList.add("translate-y-0", "opacity-100");
+
+      if (toastTimeout) clearTimeout(toastTimeout);
+      
+      toastTimeout = setTimeout(() => {
+        toast.classList.add("translate-y-24", "opacity-0");
+        toast.classList.remove("translate-y-0", "opacity-100");
+      }, 3000);
     }
   </script>
 </body>
